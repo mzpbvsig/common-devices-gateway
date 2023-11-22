@@ -1,0 +1,18 @@
+pulsarServer: # 云端pulsar配置
+  url: "pulsar://pulsar.yf5g.cn:6650"
+  token: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnQifQ.0PaUIOnb6yunjj13ur7Kqtrka2UwcZLNvKIUtqzoG_g"
+  namespace: "yf/common_gateway"
+restPort: 8082
+cloudProtocol: "pulsar"  # 云端上报系统
+tcpInfo:                 # 本地tcp服务
+   Port: 8080
+wsInfo:                  # 本地websocket服务
+   Path: "/ws"
+   Port: 8081
+mysqlOption:             # mysql数据库
+  ip: 192.168.80.22
+  port: 30306
+  authPass: 123456
+  username: root
+  dB: gateway
+isOpenTimeLoop: false
