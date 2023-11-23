@@ -25,10 +25,8 @@ func TestMakeData(t *testing.T) {
 }
 
 func TestParseModbusResponse(t *testing.T) {
-	// Simulate Modbus response data
 	data := []byte{0x03, 0x03, 0x04, 0x02, 0x09, 0xFF, 0x9B, 0x79, 0xFD}
 
-	// Call the parseModbusResponse function to parse the Modbus response data
 	request := &protocol.ModbusRequest{
 		Address:  []byte{3},
 		FuncCode: 3,
@@ -36,7 +34,6 @@ func TestParseModbusResponse(t *testing.T) {
 	modbus := &protocol.Modbus{}
 	_, err := modbus.ParseResponse(request, data)
 
-	// Check if there's an error
 	if err != nil {
 		t.Errorf("Failed to parse Modbus response: %v", err)
 		return

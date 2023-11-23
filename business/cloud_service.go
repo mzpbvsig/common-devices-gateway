@@ -16,7 +16,6 @@ type CloudServer struct {
 	Config        bean.Config
 }
 
-// NewCloudServer creates a new NewCloudServer object
 func NewCloudServer(config bean.Config) *CloudServer {
 	cloudServer = &CloudServer{}
 
@@ -54,11 +53,8 @@ func (cloudServer CloudServer) handlePulsarEvent(payload []byte) {
 	}
 }
 
-func (server CloudServer) Registers() {
-	for _, deviceGateway := range config.DeviceGateways {
-		server.Register(deviceGateway)
-		time.Sleep(100 * time.Millisecond)
-	}
+func (server CloudServer) CreateStateProducers() {
+	server.PulsarManager.CreateStateProducers(config.DeviceGateways)
 }
 
 func (server CloudServer) Register(deviceGateway *bean.DeviceGateway) {
@@ -74,8 +70,22 @@ func (server CloudServer) Register(deviceGateway *bean.DeviceGateway) {
 	}
 }
 
-func (server CloudServer) CreateStateProducers() {
-	server.PulsarManager.CreateStateProducers(config.DeviceGateways)
+func (server CloudServer) Registers() {
+	for _, deviceGateway := range config.DeviceGateways {
+		server.Register(deviceGateway)
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+func (server CloudServer) RegisterByGatewayId(gatewayId string) {
+	if len(gatewayId) == 0 || gatewayId == "0" {
+		server.Registers()
+	} else {
+		deviceGateway := getDeviceGatewayById(gatewayId)
+		if deviceGateway != nil {
+			server.Register(deviceGateway)
+		}
+	}
 }
 
 func (server CloudServer) ReportState(deviceType string, gatewayId string, data []byte) {

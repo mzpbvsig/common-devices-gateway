@@ -206,13 +206,13 @@ func (restManager *RestManager) test(entityId string, eventMethod string, data s
 	}
 }
 
-func (restManager *RestManager) refresh() {
+func (restManager *RestManager) refresh(gatewayId string) {
 	loadDeviceGateways()
 
 	dataManager.BuildQuickDeviceDatas()
 
-	cloudServer.Registers()
 	cloudServer.CreateStateProducers()
+	cloudServer.RegisterByGatewayId(gatewayId)
 
 	log.Printf("Refresh data [loadDeviceGateways BuildQuickDeviceDatas Registers CreateStateProducers]")
 }

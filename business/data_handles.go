@@ -77,7 +77,6 @@ func (h *SearchHandler) Handle(deviceGateway *bean.DeviceGateway, deviceData *De
 	return true
 }
 
-// 将处理器映射到相应的设备类型
 var dataHandlers = map[DeviceType]DataHandler{
 	TimeLoop: &CommonHandler{},
 	Search:   &SearchHandler{},

@@ -2,30 +2,30 @@ package cloud_service
 
 import (
 	"context"
-	"reflect"
 	"fmt"
+	"reflect"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/mzpbvsig/common-devices-gateway/bean"
 )
 
-
 type PulsarManager struct {
-    PulsarClient pulsar.Client
-	PulsarServer bean.PulsarServer
+	PulsarClient     pulsar.Client
+	PulsarServer     bean.PulsarServer
 	RegisterProducer pulsar.Producer
-	StateProducers map[string]pulsar.Producer
+	StateProducers   map[string]pulsar.Producer
 }
 
 func NewPulsarManager(pulsarServer bean.PulsarServer) *PulsarManager {
-    client := Connect(pulsarServer)
+	client := Connect(pulsarServer)
 
-    return &PulsarManager{
-        PulsarClient: client,
-		PulsarServer: pulsarServer,
-        StateProducers:    make(map[string]pulsar.Producer),
-    }
+	return &PulsarManager{
+		PulsarClient:   client,
+		PulsarServer:   pulsarServer,
+		StateProducers: make(map[string]pulsar.Producer),
+	}
 }
 
 func Connect(pulsarServer bean.PulsarServer) pulsar.Client {
@@ -42,13 +42,13 @@ func Connect(pulsarServer bean.PulsarServer) pulsar.Client {
 	return client
 }
 
-func (pm *PulsarManager) CreateProducer(name string) (pulsar.Producer,error) {
+func (pm *PulsarManager) CreateProducer(name string) (pulsar.Producer, error) {
 	if pm.PulsarClient == nil {
-        return nil, fmt.Errorf("Pulsar client is not initialized")
-    }
+		return nil, fmt.Errorf("Pulsar client is not initialized")
+	}
 	return pm.PulsarClient.CreateProducer(pulsar.ProducerOptions{
-		Topic:                name,
-		BatchingMaxSize:      1024 * 1024 * 5,
+		Topic:           name,
+		BatchingMaxSize: 1024 * 1024 * 5,
 	})
 }
 
@@ -82,23 +82,22 @@ func (pm *PulsarManager) ReportState(ctx context.Context, gatewayId string, msg 
 	return pm.Send(ctx, pm.StateProducers[gatewayId], msg)
 }
 
-
 func (pm *PulsarManager) ListenForEvents(handler func([]byte)) {
 	go pm.createConsumers(handler)
 }
 
-func (pm *PulsarManager) CreateRegisterProducer(){
-	registerTopicName :=  fmt.Sprintf("%s/register", pm.PulsarServer.Namespace)
-    registerProducer, err := pm.CreateProducer(registerTopicName)
+func (pm *PulsarManager) CreateRegisterProducer() {
+	registerTopicName := fmt.Sprintf("%s/register", pm.PulsarServer.Namespace)
+	registerProducer, err := pm.CreateProducer(registerTopicName)
 	if err != nil {
 		log.Errorf("Create register producer error: %s", err)
-		return 
+		return
 	}
 	pm.RegisterProducer = registerProducer
 
 }
 
-func (pm *PulsarManager) CreateStateProducers(deviceGateways []*bean.DeviceGateway){
+func (pm *PulsarManager) CreateStateProducers(deviceGateways []*bean.DeviceGateway) {
 	for _, deviceGateway := range deviceGateways {
 		gatewayId := deviceGateway.Id
 
@@ -115,38 +114,37 @@ func (pm *PulsarManager) CreateStateProducers(deviceGateways []*bean.DeviceGatew
 	}
 }
 
-func (pm *PulsarManager) createConsumers(handler func([]byte)){
+func (pm *PulsarManager) createConsumers(handler func([]byte)) {
 	if pm.PulsarClient == nil {
-         log.Errorf("Pulsar client is not initialized")
-		 return
-    }
+		log.Errorf("Pulsar client is not initialized")
+		return
+	}
 
-	topicName := pm.PulsarServer.Namespace + "/events" 
-    consumer, err := pm.PulsarClient.Subscribe(pulsar.ConsumerOptions{
-        Topics:           []string{topicName},
-        SubscriptionName: "events",
+	topicName := pm.PulsarServer.Namespace + "/events"
+	consumer, err := pm.PulsarClient.Subscribe(pulsar.ConsumerOptions{
+		Topics:           []string{topicName},
+		SubscriptionName: "events",
 		Type:             pulsar.Shared,
-    })
+	})
 
-    if err != nil {
-        log.Errorf("Create Pulsar consumer for %s error: %s", topicName, err)
-        return
-    }
+	if err != nil {
+		log.Errorf("Create Pulsar consumer for %s error: %s", topicName, err)
+		return
+	}
 
-    defer consumer.Close()
+	defer consumer.Close()
 
-    ctx := context.Background()
+	ctx := context.Background()
 
-    for {
-        msg, err := consumer.Receive(ctx)
-        if err != nil {
-            log.Errorf("Receive message from %s error: %s", topicName, err)
-            continue
-        }
+	for {
+		msg, err := consumer.Receive(ctx)
+		if err != nil {
+			log.Errorf("Receive message from %s error: %s", topicName, err)
+			continue
+		}
 
-        handler(msg.Payload())
+		handler(msg.Payload())
 
-        consumer.Ack(msg)
-    }
+		consumer.Ack(msg)
+	}
 }
-

@@ -29,7 +29,6 @@ type DataManager struct {
 	QuickDeviceDatas map[string]*DeviceData
 }
 
-// NewDataManager creates a new instance of DataManager with an initialized queue.
 func NewDataManager() *DataManager {
 	dataManager := &DataManager{
 		Queues:      make(map[string]*data_struct.Queue[*DeviceData]),

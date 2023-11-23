@@ -76,8 +76,7 @@ func Start() {
 	sendDeviceDataLoop()
 
 	// Wait for termination signal
-	select {
-	case <-stopChan:
-		log.Println("Program terminated.")
-	}
+	<-stopChan
+	log.Println("Program terminated.")
+
 }

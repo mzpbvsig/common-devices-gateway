@@ -48,7 +48,6 @@ func BytesToInt(b []byte) (int, error) {
 }
 
 func MergeJSONStrings(jsonStr1, jsonStr2 string) (string, error) {
-	// 将JSON字符串解析为map
 	var map1, map2 map[string]interface{}
 	err := json.Unmarshal([]byte(jsonStr1), &map1)
 	if err != nil {
@@ -59,12 +58,10 @@ func MergeJSONStrings(jsonStr1, jsonStr2 string) (string, error) {
 		return "", err
 	}
 
-	// 合并map
 	for k, v := range map2 {
 		map1[k] = v
 	}
 
-	// 将合并后的map转换回JSON
 	mergedJSON, err := json.Marshal(map1)
 	if err != nil {
 		return "", err

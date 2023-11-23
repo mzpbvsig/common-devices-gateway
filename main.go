@@ -4,10 +4,6 @@ import (
 	"github.com/mzpbvsig/common-devices-gateway/business"
 )
 
-
 func main() {
-    business.Start()
+	business.Start()
 }
-
-
-

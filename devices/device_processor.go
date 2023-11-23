@@ -46,7 +46,6 @@ func NewDeviceProcessor() *DeviceProcessor {
 		return address
 	})
 
-	//Register processors for different device models
 	dp.registerDataFromDeviceProcessors()
 	dp.registerMakeDeviceDataProcessors()
 
@@ -72,7 +71,7 @@ func (dp *DeviceProcessor) LoadPlugins(directory string) {
 func (dp *DeviceProcessor) LoadPlugin(name, path string) {
 	protocol, err := plugin_interface.GetProtocolInstance(path)
 	if err != nil {
-		log.Error("Loaded plugin %s error: %+v path is %s", name, err, path)
+		log.Errorf("Loaded plugin %s error: %+v path is %s", name, err, path)
 		return
 	}
 	dp.protocols[name] = protocol
@@ -83,7 +82,6 @@ func (dp *DeviceProcessor) UnloadPulgin(name string) {
 	dp.protocols[name] = nil
 }
 
-// 根据设备协议构造不同的处理方法
 func (dp *DeviceProcessor) registerDataFromDeviceProcessors() {
 	dp.dataFromDeviceProcessor[Modbus] = dp.protocols[Modbus].ProcessDataFromDevice
 	dp.dataFromDeviceProcessor[ModbusPlus] = dp.protocols[ModbusPlus].ProcessDataFromDevice
@@ -94,7 +92,6 @@ func (dp *DeviceProcessor) registerMakeDeviceDataProcessors() {
 	dp.makeDeviceDataProcessor[ModbusPlus] = dp.protocols[ModbusPlus].MakeDeviceData
 }
 
-// 处理设备返回的数据
 func (dp *DeviceProcessor) ProcessDataFromDevice(device *bean.Device, entity *bean.Entity, data []byte, isRunJs bool) (string, error) {
 	processor, ok := dp.dataFromDeviceProcessor[device.DeviceClass.Protocol]
 	if !ok {
@@ -104,7 +101,6 @@ func (dp *DeviceProcessor) ProcessDataFromDevice(device *bean.Device, entity *be
 	return processor(device, entity, data, isRunJs)
 }
 
-// 处理构造设备的数据
 func (dp *DeviceProcessor) ProcessMakeDeviceData(device *bean.Device, entity *bean.Entity) ([]byte, error) {
 	processor, ok := dp.makeDeviceDataProcessor[device.DeviceClass.Protocol]
 	if !ok {

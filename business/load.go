@@ -43,9 +43,18 @@ func updateDeviceGateways(deviceGateways []*bean.DeviceGateway) {
 	config.DeviceGateways = deviceGateways
 }
 
-func getDeviceGateway(clientAddr string) *bean.DeviceGateway {
+func getDeviceGatewayByClientAddr(clientAddr string) *bean.DeviceGateway {
 	for _, deviceGateway := range config.DeviceGateways {
 		if strings.Contains(clientAddr, deviceGateway.Ip) {
+			return deviceGateway
+		}
+	}
+	return nil
+}
+
+func getDeviceGatewayById(gatewayId string) *bean.DeviceGateway {
+	for _, deviceGateway := range config.DeviceGateways {
+		if deviceGateway.Id == gatewayId {
 			return deviceGateway
 		}
 	}

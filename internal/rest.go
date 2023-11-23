@@ -16,12 +16,11 @@ import (
 type DeviceGatewaySearchCallback func(string, string, int)
 type DeviceGatewaySearch2Callback func(string, string, []string)
 type DeviceGatewayTestCallback func(eventId string, eventMethod string, data string)
-type DeviceGatewayRefreshCallback func()
+type DeviceGatewayRefreshCallback func(gatewayId string)
 type DeviceGatewayUnsearchCallback func(gatewayId string)
 
 type RestServer struct {
 	router           *mux.Router
-	mysqlManager     *MysqlManager
 	SearchCallback   DeviceGatewaySearchCallback
 	Search2Callback  DeviceGatewaySearch2Callback
 	UnsearchCallback DeviceGatewayUnsearchCallback
@@ -46,36 +45,23 @@ func (s *RestServer) routes() {
 	s.router.HandleFunc("/healthz", s.handleHealth()).Methods("GET")
 }
 
-// sendJSONResponse is a generic function to send JSON responses.
+func (s *RestServer) Start(port int) {
+	log.Printf("RestServer listening on port %d", port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), s.router))
+}
+
 func sendJSONResponse[T any](w http.ResponseWriter, response bean.ResponseData[T]) {
-	// Marshal the response into JSON
 	jsonData, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error marshalling response: %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	// Set the header and write the response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.Code)
 	_, err = w.Write(jsonData)
 	if err != nil {
 		log.Errorf("Error writing response: %+v", err)
-	}
-}
-
-func (s *RestServer) handleRefresh() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		response := bean.ResponseData[string]{
-			Message: "Refresh request completed",
-			Code:    http.StatusOK,
-			Data:    "",
-		}
-		sendJSONResponse(w, response)
-
-		if s.RefreshCallback != nil {
-			s.RefreshCallback()
-		}
 	}
 }
 
@@ -103,7 +89,6 @@ func (s *RestServer) handleTest() http.HandlerFunc {
 			return
 		}
 
-		// Create the response struct
 		response := bean.ResponseData[string]{
 			Message: "Test request completed",
 			Code:    http.StatusOK,
@@ -114,20 +99,31 @@ func (s *RestServer) handleTest() http.HandlerFunc {
 	}
 }
 
+func (s *RestServer) handleRefresh() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		gatewayId := r.URL.Query().Get("gateway_id")
+
+		response := bean.ResponseData[string]{
+			Message: "Refresh request completed",
+			Code:    http.StatusOK,
+			Data:    "",
+		}
+		sendJSONResponse(w, response)
+
+		if s.RefreshCallback != nil {
+			s.RefreshCallback(gatewayId)
+		}
+	}
+}
+
 func (s *RestServer) handleSearch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var deviceGateways []*bean.DeviceGateway
-		var err error
 
-		// Parse the query string for gateway_id
 		gatewayId := r.URL.Query().Get("gateway_id")
 		classId := r.URL.Query().Get("class_id")
 		maxSN := r.URL.Query().Get("max_sn")
-
-		if err != nil {
-			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-			return
-		}
 
 		num, err := strconv.Atoi(maxSN)
 		if err != nil {
@@ -135,12 +131,10 @@ func (s *RestServer) handleSearch() http.HandlerFunc {
 			return
 		}
 
-		// If a callback is set, pass the device gateways to it
 		if s.SearchCallback != nil {
 			s.SearchCallback(gatewayId, classId, num)
 		}
 
-		// Create the response struct
 		response := bean.ResponseData[[]*bean.DeviceGateway]{
 			Message: "Search completed",
 			Code:    http.StatusOK,
@@ -156,7 +150,6 @@ func (s *RestServer) handleSearch2() http.HandlerFunc {
 		var deviceGateways []*bean.DeviceGateway
 		var err error
 
-		// Parse the query string for gateway_id
 		gatewayId := r.URL.Query().Get("gateway_id")
 		classId := r.URL.Query().Get("class_id")
 
@@ -171,12 +164,10 @@ func (s *RestServer) handleSearch2() http.HandlerFunc {
 		}
 		sns := r.FormValue("sns")
 
-		// If a callback is set, pass the device gateways to it
 		if s.Search2Callback != nil {
 			s.Search2Callback(gatewayId, classId, strings.Split(sns, ","))
 		}
 
-		// Create the response struct
 		response := bean.ResponseData[[]*bean.DeviceGateway]{
 			Message: "Search completed",
 			Code:    http.StatusOK,
@@ -191,13 +182,10 @@ func (s *RestServer) handleUnsearch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		gatewayId := r.URL.Query().Get("gateway_id")
 
-		// If a callback is set, pass the device gateways to it
 		if s.UnsearchCallback != nil {
-			// the fuck code will modify on mul protocol
 			s.UnsearchCallback(gatewayId)
 		}
 
-		// Create the response struct
 		response := bean.ResponseData[string]{
 			Message: "Search completed",
 			Code:    http.StatusOK,
@@ -213,9 +201,4 @@ func (s *RestServer) handleHealth() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Service is healthy"))
 	}
-}
-
-func (s *RestServer) Start(port int) {
-	log.Printf("RestServer listening on port %d", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), s.router))
 }

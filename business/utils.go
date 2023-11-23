@@ -2,6 +2,7 @@ package business
 
 import (
 	"fmt"
+
 	"github.com/mzpbvsig/common-devices-gateway/utils"
 )
 
@@ -17,14 +18,14 @@ func mergeIfLongEnough(base, toMerge string) string {
 
 func dispatchEvent(entityId string, eventMethod string, value string, Type DeviceType) error {
 	deviceData := dataManager.GetQuickDeviceData(entityId)
-	
+
 	if deviceData == nil {
-		return fmt.Errorf("Device Data not found by entity id %s", entityId)
+		return fmt.Errorf("device data not found by entity id %s", entityId)
 	}
 
 	deviceGateway := deviceData.DeviceGateway
 	if !deviceGateway.IsOnline {
-		return fmt.Errorf("DeviceGateway id:%s, ip: %s is offline", deviceGateway.Id,  deviceGateway.Ip)
+		return fmt.Errorf("device gateway id:%s, ip: %s is offline", deviceGateway.Id, deviceGateway.Ip)
 	}
 
 	entity := deviceData.Entity
@@ -34,28 +35,28 @@ func dispatchEvent(entityId string, eventMethod string, value string, Type Devic
 		if eventMethod == event.Method {
 			if len(event.Code) > 7 {
 				entity.EntityClass.Code = event.Code
-			}	
+			}
 			entity.EntityClass.Data = mergeIfLongEnough(entity.EntityClass.Data, event.Data)
 			break
 		}
 	}
-	
+
 	entity.EntityClass.Data = mergeIfLongEnough(entity.EntityClass.Data, value)
 	entity.EntityClass.Data = mergeIfLongEnough(entity.EntityClass.Data, entity.Data)
 
 	data, err := dp.ProcessMakeDeviceData(deviceData.Device, deviceData.Entity)
-    if err != nil {
-        return fmt.Errorf("Make data error: %v", err)
-    }
+	if err != nil {
+		return fmt.Errorf("make data error: %v", err)
+	}
 
-	sendData := &DeviceData {
+	sendData := &DeviceData{
 		DeviceGateway: deviceGateway,
-		Data:     data,
-		Entity:   entity,
-		Device:   device,
-		Type: Type,
+		Data:          data,
+		Entity:        entity,
+		Device:        device,
+		Type:          Type,
 	}
 	dataManager.Unshift(deviceGateway.Id, sendData)
 
-    return nil
+	return nil
 }
