@@ -17,11 +17,20 @@ func NewDeviceProcessor(protocols []*bean.Protocol) *DeviceProcessor {
 		protocols:    make(map[string]*bean.Protocol),
 		globalEngine: code_engin.NewJSEngine(),
 	}
+
+	dp.LoadProtocols(protocols)
+
+	return dp
+}
+
+func (dp *DeviceProcessor) LoadProtocols(protocols []*bean.Protocol) {
 	for _, protocol := range protocols {
 		dp.protocols[protocol.Name] = protocol
 	}
+}
 
-	return dp
+func (dp *DeviceProcessor) ReloadProtocols(protocols []*bean.Protocol) {
+	dp.LoadProtocols(protocols)
 }
 
 func (dp *DeviceProcessor) ProcessDataFromDevice(device *bean.Device, entity *bean.Entity, data []byte, isRunJs bool) (string, error) {

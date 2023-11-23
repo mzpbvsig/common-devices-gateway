@@ -44,7 +44,6 @@ func (restManager *RestManager) Increasing(gatewayId string) {
 	restManager.searchNums[gatewayId]++
 }
 
-// search searches for devices and processes their data
 func (restManager *RestManager) performSearch(rgatewayId string, classId string, snProvider func(int) string, snCount int) {
 	for _, deviceGateway := range config.DeviceGateways {
 		gatewayId := deviceGateway.Id
@@ -190,12 +189,12 @@ func (restManager *RestManager) checkSearchCompletion(gatewayId string) bool {
 		return true
 	} else {
 		log.Printf("Search process is %.2f", process)
-		restManager.UpdateSearchProcess(gatewayId, fmt.Sprintf("%.2f", process))
+		restManager.updateSearchProcess(gatewayId, fmt.Sprintf("%.2f", process))
 		return false
 	}
 }
 
-func (restManager *RestManager) UpdateSearchProcess(gatewayId string, process string) {
+func (restManager *RestManager) updateSearchProcess(gatewayId string, process string) {
 	mysqlManager.UpdateSearchProcess(gatewayId, process)
 }
 
@@ -209,6 +208,7 @@ func (restManager *RestManager) test(entityId string, eventMethod string, data s
 func (restManager *RestManager) refresh(gatewayId string) {
 	loadData()
 
+	dp.ReloadProtocols(config.Protocols)
 	dataManager.BuildQuickDeviceDatas()
 
 	cloudServer.CreateStateProducers()
