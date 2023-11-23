@@ -7,23 +7,19 @@ import (
 
 	"github.com/mzpbvsig/common-devices-gateway/bean"
 	"github.com/mzpbvsig/common-devices-gateway/cloud_service"
-	"github.com/mzpbvsig/common-devices-gateway/devices"
 
 	log "github.com/sirupsen/logrus"
-
 )
 
-
 type CloudServer struct {
-	PulsarManager   *cloud_service.PulsarManager
-	Config          bean.Config
-	DeviceProcessor *devices.DeviceProcessor
+	PulsarManager *cloud_service.PulsarManager
+	Config        bean.Config
 }
 
 // NewCloudServer creates a new NewCloudServer object
 func NewCloudServer(config bean.Config) *CloudServer {
 	cloudServer = &CloudServer{}
-	
+
 	pulsarManager := cloud_service.NewPulsarManager(config.PulsarServer)
 	pulsarManager.CreateRegisterProducer()
 
@@ -31,18 +27,18 @@ func NewCloudServer(config bean.Config) *CloudServer {
 	cloudServer.Config = config
 
 	cloudServer.CreateStateProducers()
-    pulsarManager.ListenForEvents(cloudServer.handlePulsarEvent)
+	pulsarManager.ListenForEvents(cloudServer.handlePulsarEvent)
 
 	return cloudServer
 }
 
 func (cloudServer CloudServer) handlePulsarEvent(payload []byte) {
-    log.Printf("Receviced cloud message: %s", string(payload))
-    var eventMap map[string]interface{}
-    err := json.Unmarshal(payload, &eventMap)
-    if err != nil {
-        return
-    }
+	log.Printf("Receviced cloud message: %s", string(payload))
+	var eventMap map[string]interface{}
+	err := json.Unmarshal(payload, &eventMap)
+	if err != nil {
+		return
+	}
 
 	entityId, ok := eventMap["entity_id"].(string)
 	eventMethod, _ := eventMap["event_method"].(string)
@@ -53,19 +49,19 @@ func (cloudServer CloudServer) handlePulsarEvent(payload []byte) {
 	}
 
 	err = dispatchEvent(entityId, eventMethod, data, Cloud)
-    if err != nil {
-        log.Errorf("Cloud message make data error: %+v ", err)
-    }
+	if err != nil {
+		log.Errorf("Cloud message make data error: %+v ", err)
+	}
 }
 
-func (server CloudServer) Registers(){
+func (server CloudServer) Registers() {
 	for _, deviceGateway := range config.DeviceGateways {
 		server.Register(deviceGateway)
 		time.Sleep(100 * time.Millisecond)
 	}
 }
 
-func (server CloudServer) Register(deviceGateway *bean.DeviceGateway){
+func (server CloudServer) Register(deviceGateway *bean.DeviceGateway) {
 	ctx := context.Background()
 	data, err := json.Marshal(deviceGateway)
 	if err != nil {
@@ -78,11 +74,11 @@ func (server CloudServer) Register(deviceGateway *bean.DeviceGateway){
 	}
 }
 
-func (server CloudServer) CreateStateProducers(){
+func (server CloudServer) CreateStateProducers() {
 	server.PulsarManager.CreateStateProducers(config.DeviceGateways)
 }
 
-func (server CloudServer) ReportState(deviceType string, gatewayId string,  data []byte){
+func (server CloudServer) ReportState(deviceType string, gatewayId string, data []byte) {
 	ctx := context.Background()
 	switch server.Config.CloudProtocol {
 	case "pulsar":

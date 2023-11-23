@@ -5,27 +5,26 @@ import (
 	"github.com/mzpbvsig/common-devices-gateway/data_struct"
 )
 
-
 type DeviceType int
 
 const (
-  TimeLoop DeviceType = iota
-  Search
-  Test 
-  Cloud
+	TimeLoop DeviceType = iota
+	Search
+	Test
+	Cloud
 )
 
 type DeviceData struct {
-    DeviceGateway *bean.DeviceGateway
-    Entity *bean.Entity
-	Device *bean.Device
-	Type    DeviceType
-    Data   []byte
+	DeviceGateway *bean.DeviceGateway
+	Entity        *bean.Entity
+	Device        *bean.Device
+	Type          DeviceType
+	Data          []byte
 }
 
 type DataManager struct {
-	Queues  map[string]*data_struct.Queue[*DeviceData]
-	DeviceDatas  map[string]*DeviceData
+	Queues      map[string]*data_struct.Queue[*DeviceData]
+	DeviceDatas map[string]*DeviceData
 
 	QuickDeviceDatas map[string]*DeviceData
 }
@@ -33,7 +32,7 @@ type DataManager struct {
 // NewDataManager creates a new instance of DataManager with an initialized queue.
 func NewDataManager() *DataManager {
 	dataManager := &DataManager{
-		Queues: make(map[string]*data_struct.Queue[*DeviceData]),
+		Queues:      make(map[string]*data_struct.Queue[*DeviceData]),
 		DeviceDatas: make(map[string]*DeviceData),
 
 		QuickDeviceDatas: make(map[string]*DeviceData),
@@ -42,14 +41,14 @@ func NewDataManager() *DataManager {
 	return dataManager
 }
 
-func (manager *DataManager) BuildQuickDeviceDatas(){
-	for _, deviceGateway := range config.DeviceGateways {	
+func (manager *DataManager) BuildQuickDeviceDatas() {
+	for _, deviceGateway := range config.DeviceGateways {
 		for _, device := range deviceGateway.Devices {
 			for _, entity := range device.Entities {
-				manager.QuickDeviceDatas[entity.Id] = &DeviceData {
+				manager.QuickDeviceDatas[entity.Id] = &DeviceData{
 					DeviceGateway: deviceGateway,
-					Device:  device,
-					Entity: entity,
+					Device:        device,
+					Entity:        entity,
 				}
 			}
 		}
@@ -60,53 +59,51 @@ func (manager *DataManager) GetQuickDeviceData(entityId string) *DeviceData {
 	return manager.QuickDeviceDatas[entityId]
 }
 
-func(manager *DataManager) SetData(gatewayId string, deviceData *DeviceData){
+func (manager *DataManager) SetData(gatewayId string, deviceData *DeviceData) {
 	manager.DeviceDatas[gatewayId] = deviceData
 }
 
-
-// Push adds a new DeviceData to the queue.
 func (manager *DataManager) Push(gatewayId string, data *DeviceData) {
 	if manager.Queues[gatewayId] == nil {
-        manager.Queues[gatewayId] = data_struct.NewQueue[*DeviceData]()
+		manager.Queues[gatewayId] = data_struct.NewQueue[*DeviceData]()
 	}
-	
-	manager.Queues[gatewayId].Push(data) 
+
+	manager.Queues[gatewayId].Push(data)
 }
 
 func (manager *DataManager) Unshift(gatewayId string, data *DeviceData) {
 	if manager.Queues[gatewayId] == nil {
-        manager.Queues[gatewayId] = data_struct.NewQueue[*DeviceData]()
+		manager.Queues[gatewayId] = data_struct.NewQueue[*DeviceData]()
 	}
 
-	manager.Queues[gatewayId].Unshift(data) 
+	manager.Queues[gatewayId].Unshift(data)
 }
 
-func (manager *DataManager) Pop(gatewayId string)  *DeviceData  {
+func (manager *DataManager) Pop(gatewayId string) *DeviceData {
 	if manager.Queues[gatewayId] == nil {
-        return nil
+		return nil
 	}
 
-	return manager.Queues[gatewayId].Pop() 
+	return manager.Queues[gatewayId].Pop()
 }
 
 func (manager *DataManager) Clear(gatewayId string) {
-    deviceData, exists := manager.DeviceDatas[gatewayId]
-    if exists {
+	deviceData, exists := manager.DeviceDatas[gatewayId]
+	if exists {
 		deviceData.DeviceGateway = nil
-        deviceData.Entity = nil
-        deviceData.Device = nil
-        manager.DeviceDatas[gatewayId] = nil
-    }
+		deviceData.Entity = nil
+		deviceData.Device = nil
+		manager.DeviceDatas[gatewayId] = nil
+	}
 }
 
 func (manager *DataManager) GetData(gatewayId string) *DeviceData {
 	return manager.DeviceDatas[gatewayId]
 }
 
-func(manager *DataManager) RemoveAll(gatewayId string){
+func (manager *DataManager) RemoveAll(gatewayId string) {
 	if manager.Queues[gatewayId] == nil {
-        manager.Queues[gatewayId] = data_struct.NewQueue[*DeviceData]()
+		manager.Queues[gatewayId] = data_struct.NewQueue[*DeviceData]()
 	}
 
 	manager.Queues[gatewayId].RemoveAll(func(item *DeviceData) bool {
@@ -117,7 +114,7 @@ func(manager *DataManager) RemoveAll(gatewayId string){
 		if item.Device == nil {
 			return false
 		}
-		
+
 		return item.Device.GatewayId == gatewayId
 	})
 }

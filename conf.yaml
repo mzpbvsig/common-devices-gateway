@@ -15,4 +15,3 @@ mysqlOption:             # mysql数据库
   authPass: 123456
   username: root
   dB: gateway
-isOpenTimeLoop: false

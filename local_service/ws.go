@@ -1,20 +1,19 @@
 package local_service
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
-	"sync"
+
+	log "github.com/sirupsen/logrus"
+
+	"fmt"
 
 	"github.com/gorilla/websocket"
-	"fmt"
 )
 
 // WebSocketServer 是 WebSocket 服务器对象
 type WebSocketServer struct {
-	clients         map[string]*websocket.Conn
-	clientsLock     sync.Mutex
-	shutdownChan    chan struct{}
-	MessageCallback func(clientAddr string, data []byte)
+	BaseServer
+	clients map[string]*websocket.Conn
 }
 
 var upgrader = websocket.Upgrader{
@@ -24,11 +23,15 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func NewWebSocketServer(callback func(clientAddr string, data []byte)) *WebSocketServer {
+func NewWebSocketServer(messageCallback func(clientAddr string, data []byte), connectedCallback func(clientAddr string), disconnectedCallback func(clientAddr string)) *WebSocketServer {
 	return &WebSocketServer{
-		clients:      make(map[string]*websocket.Conn),
-		shutdownChan: make(chan struct{}),
-		MessageCallback: callback,
+		clients: make(map[string]*websocket.Conn),
+		BaseServer: BaseServer{
+			shutdownChan:         make(chan struct{}),
+			MessageCallback:      messageCallback,
+			ConnectedCallback:    connectedCallback,
+			DisconnectedCallback: disconnectedCallback,
+		},
 	}
 }
 
@@ -95,14 +98,13 @@ func (s *WebSocketServer) handleWebSocket(w http.ResponseWriter, r *http.Request
 	}
 }
 
-
 func (s *WebSocketServer) SendMessage(clientAddr string, message []byte) error {
 	s.clientsLock.Lock()
 	defer s.clientsLock.Unlock()
 
 	conn, found := s.clients[clientAddr]
 	if !found {
-		return fmt.Errorf("Client %s not found", clientAddr)
+		return fmt.Errorf("client %s not found", clientAddr)
 	}
 
 	err := conn.WriteMessage(websocket.TextMessage, message)
@@ -110,6 +112,6 @@ func (s *WebSocketServer) SendMessage(clientAddr string, message []byte) error {
 		return err
 	}
 
-	log.Printf("Sent message to client %s: %+v", clientAddr, message)
+	log.Printf("Send message to client %s: %+v", clientAddr, message)
 	return nil
 }

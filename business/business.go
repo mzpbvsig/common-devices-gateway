@@ -3,7 +3,7 @@ package business
 import (
 	"github.com/mzpbvsig/common-devices-gateway/bean"
 	"github.com/mzpbvsig/common-devices-gateway/devices"
-	cg "github.com/mzpbvsig/common-devices-gateway/common_gateway"
+	internal "github.com/mzpbvsig/common-devices-gateway/internal"
 	"github.com/mzpbvsig/common-devices-gateway/loghook"
 
 	log "github.com/sirupsen/logrus"
@@ -11,27 +11,25 @@ import (
 
 // Global configuration and state variables
 var (
-	config           bean.Config
-	mysqlManager     *cg.MysqlManager	
-	restManager      *RestManager
-	dataManager      *DataManager
-	dp               *devices.DeviceProcessor
+	config       bean.Config
+	mysqlManager *internal.MysqlManager
+	restManager  *RestManager
+	dataManager  *DataManager
+	dp           *devices.DeviceProcessor
 
 	nextSendDataChan chan bool
 	stopChan         chan struct{}
 	cloudServer      *CloudServer
 	localServer      *LocalServer
-
-
 )
 
 // Start initializes and starts the main business logic
 func Start() {
-	
+
 	// Load configuration and initialize device gateways
 	loadConfig()
 
-	mysqlManager = cg.NewMysqlManager(config.MysqlOption)
+	mysqlManager = internal.NewMysqlManager(config.MysqlOption)
 
 	dbHook := loghook.NewDatabaseHook(mysqlManager)
 	log.AddHook(dbHook)
@@ -40,10 +38,10 @@ func Start() {
 
 	loadDeviceGateways()
 	loadDeviceClasses()
-	
+
 	// Search device callback
 	searchCallback := func(device *bean.Device, entity *bean.Entity) {
-		log.Printf("Search Callback: Device %+v  Entity %+v",*device,  *entity)
+		log.Printf("Search Callback: Device %+v  Entity %+v", *device, *entity)
 		err := mysqlManager.AddDevice(device)
 		if err != nil {
 			log.Errorf("AddDevice err: %+v", err)
@@ -60,7 +58,7 @@ func Start() {
 
 	restManager = NewRestManager(searchCallback, testCallback)
 	restManager.Start()
-	
+
 	// Initialize data structures and channels
 	dataManager = NewDataManager()
 	dp = devices.NewDeviceProcessor()
@@ -71,13 +69,10 @@ func Start() {
 	// Start cloud server
 	cloudServer = NewCloudServer(config)
 	cloudServer.Registers()
-	
+
 	// Start local server
 	localServer = NewLocalServer(config, handleData, handleConnected, handleDisconnected)
-	// Start data processing loops
-	if config.IsOpenTimeLoop {
-		go makeDeviceDataTimeLoop()
-	}
+
 	sendDeviceDataLoop()
 
 	// Wait for termination signal

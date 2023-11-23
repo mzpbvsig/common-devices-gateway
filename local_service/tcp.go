@@ -1,33 +1,31 @@
 package local_service
 
 import (
-	"net"
-	"sync"
-	"strings"
-	"fmt"
 	"errors"
+	"fmt"
+	"net"
+	"strings"
+
 	log "github.com/sirupsen/logrus"
 )
 
 // TCPServer is a TCP server object
 type TCPServer struct {
-	listener        net.Listener
-	clients         map[string]net.Conn
-	clientsLock     sync.Mutex
-	shutdownChan    chan struct{}
-	MessageCallback func(clientAddr string, data []byte)
-	ConnectedCallback func(clientAddr string)
-	DisconnectedCallback func(clientAddr string)
+	BaseServer
+	listener net.Listener
+	clients  map[string]net.Conn
 }
 
 // NewTCPServer creates a new TCPServer object
-func NewTCPServer(messageCallback func(clientAddr string, data []byte), connectedCallback func(clientAddr string),	disconnectedCallback func(clientAddr string)) *TCPServer {
+func NewTCPServer(messageCallback func(clientAddr string, data []byte), connectedCallback func(clientAddr string), disconnectedCallback func(clientAddr string)) *TCPServer {
 	return &TCPServer{
-		clients:         make(map[string]net.Conn),
-		shutdownChan:    make(chan struct{}),
-		MessageCallback: messageCallback,
-		ConnectedCallback: connectedCallback,
-		DisconnectedCallback: disconnectedCallback,
+		clients: make(map[string]net.Conn),
+		BaseServer: BaseServer{
+			shutdownChan:         make(chan struct{}),
+			MessageCallback:      messageCallback,
+			ConnectedCallback:    connectedCallback,
+			DisconnectedCallback: disconnectedCallback,
+		},
 	}
 }
 
@@ -115,7 +113,7 @@ func (s *TCPServer) SendMessage(senderAddr string, data []byte) error {
 
 	var errs []string
 	for clientAddr, conn := range s.clients {
-		if strings.Index(clientAddr, senderAddr) != -1 {
+		if strings.Contains(clientAddr, senderAddr) {
 			_, err := conn.Write(data)
 			if err != nil {
 				errMsg := fmt.Sprintf("Failed to send message to client %s: %+v", clientAddr, err)
@@ -133,4 +131,3 @@ func (s *TCPServer) SendMessage(senderAddr string, data []byte) error {
 
 	return nil
 }
-
