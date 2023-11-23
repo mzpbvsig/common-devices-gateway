@@ -21,7 +21,7 @@ func (h *CommonHandler) Handle(deviceGateway *bean.DeviceGateway, deviceData *De
 	result, err := dp.ProcessDataFromDevice(device, entity, data, true)
 
 	if err != nil {
-		log.Errorf("Error processing data from device: %+v", err)
+		log.Errorf("Error processing data from device %+v", err)
 		return false
 	}
 
@@ -44,7 +44,7 @@ func (h *TestHandler) Handle(deviceGateway *bean.DeviceGateway, deviceData *Devi
 	entity := deviceData.Entity
 	result, err := dp.ProcessDataFromDevice(device, entity, data, true)
 	if err != nil {
-		log.Error("Error processing data from device: ", err)
+		log.Error("Error processing data from device ", err)
 		return false
 	}
 

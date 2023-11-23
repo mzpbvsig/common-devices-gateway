@@ -36,8 +36,7 @@ func Start() {
 
 	log.Printf("Loaded configuration: %+v", config)
 
-	loadDeviceGateways()
-	loadDeviceClasses()
+	loadData()
 
 	// Search device callback
 	searchCallback := func(device *bean.Device, entity *bean.Entity) {
@@ -61,7 +60,7 @@ func Start() {
 
 	// Initialize data structures and channels
 	dataManager = NewDataManager()
-	dp = devices.NewDeviceProcessor()
+	dp = devices.NewDeviceProcessor(config.Protocols)
 
 	nextSendDataChan = make(chan bool)
 	stopChan = make(chan struct{})

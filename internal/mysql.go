@@ -453,3 +453,28 @@ func (manager *MysqlManager) AddLog(timestamp time.Time, message string, level s
 
 	return nil
 }
+
+func (manager *MysqlManager) GetAllProtocols() ([]*bean.Protocol, error) {
+	if manager.db == nil {
+		return nil, fmt.Errorf("database connection is not established")
+	}
+
+	rows, err := manager.db.Query("select id, name, request_code, response_code from s_device_protocol")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var protocols []*bean.Protocol
+
+	for rows.Next() {
+		protocol := &bean.Protocol{}
+		err := rows.Scan(&protocol.Id, &protocol.Name, &protocol.RequestCode, &protocol.ResponseCode)
+		if err != nil {
+			return nil, err
+		}
+		protocols = append(protocols, protocol)
+	}
+
+	return protocols, nil
+}

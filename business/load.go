@@ -11,14 +11,10 @@ func loadConfig() {
 	config = bean.GetConfig[bean.Config]("conf.yaml")
 }
 
-func loadDeviceClasses() {
-	deviceClasses, err := mysqlManager.LoadDeviceClasses()
-	if err != nil {
-		log.Errorf("Load device classes error :%s", err)
-		return
-	}
-	config.DeviceClasses = deviceClasses
-	log.Printf("Load device classes :%+v", deviceClasses)
+func loadData() {
+	loadDeviceGateways()
+	loadDeviceClasses()
+	loadProtocols()
 }
 
 func loadDeviceGateways() {
@@ -29,6 +25,39 @@ func loadDeviceGateways() {
 	}
 	updateDeviceGateways(deviceGateways)
 	log.Printf("Load device gateways :%+v", deviceGateways)
+}
+
+func loadDeviceClasses() {
+	deviceClasses, err := mysqlManager.LoadDeviceClasses()
+	if err != nil {
+		log.Errorf("Load device classes error :%s", err)
+		return
+	}
+	config.DeviceClasses = deviceClasses
+	log.Printf("Load device classes :%+v", deviceClasses)
+}
+
+func loadDevices(gatewayId string) {
+	for _, deviceGateway := range config.DeviceGateways {
+		if gatewayId == deviceGateway.Id {
+			devices, err := mysqlManager.GetDevices(gatewayId)
+			if err != nil {
+				log.Errorf("Load devices from gatewayId %+v", err)
+				break
+			}
+			deviceGateway.Devices = devices
+			break
+		}
+	}
+}
+
+func loadProtocols() {
+	protocols, err := mysqlManager.GetAllProtocols()
+	if err != nil {
+		log.Errorf("Load protocols %v", err)
+	}
+	config.Protocols = protocols
+	log.Printf("Load protocols :%+v", protocols)
 }
 
 func updateDeviceGateways(deviceGateways []*bean.DeviceGateway) {
@@ -59,18 +88,4 @@ func getDeviceGatewayById(gatewayId string) *bean.DeviceGateway {
 		}
 	}
 	return nil
-}
-
-func loadDevices(gatewayId string) {
-	for _, deviceGateway := range config.DeviceGateways {
-		if gatewayId == deviceGateway.Id {
-			devices, err := mysqlManager.GetDevices(gatewayId)
-			if err != nil {
-				log.Errorf("LoadDevices from gatewayId %+v", err)
-				break
-			}
-			deviceGateway.Devices = devices
-			break
-		}
-	}
 }

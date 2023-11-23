@@ -49,10 +49,12 @@ func BytesToInt(b []byte) (int, error) {
 
 func MergeJSONStrings(jsonStr1, jsonStr2 string) (string, error) {
 	var map1, map2 map[string]interface{}
+
 	err := json.Unmarshal([]byte(jsonStr1), &map1)
 	if err != nil {
 		return "", err
 	}
+
 	err = json.Unmarshal([]byte(jsonStr2), &map2)
 	if err != nil {
 		return "", err
@@ -68,4 +70,12 @@ func MergeJSONStrings(jsonStr1, jsonStr2 string) (string, error) {
 	}
 
 	return string(mergedJSON), nil
+}
+
+func StructToJSON(v interface{}) (string, error) {
+	jsonBytes, err := json.Marshal(v)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonBytes), nil
 }

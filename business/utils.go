@@ -46,7 +46,7 @@ func dispatchEvent(entityId string, eventMethod string, value string, Type Devic
 
 	data, err := dp.ProcessMakeDeviceData(deviceData.Device, deviceData.Entity)
 	if err != nil {
-		return fmt.Errorf("make data error: %v", err)
+		return err
 	}
 
 	sendData := &DeviceData{

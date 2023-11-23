@@ -202,12 +202,12 @@ func (restManager *RestManager) UpdateSearchProcess(gatewayId string, process st
 func (restManager *RestManager) test(entityId string, eventMethod string, data string) {
 	err := dispatchEvent(entityId, eventMethod, data, Test)
 	if err != nil {
-		log.Errorf("Test make data error: %+v ", err)
+		log.Errorf("Test make data %+v ", err)
 	}
 }
 
 func (restManager *RestManager) refresh(gatewayId string) {
-	loadDeviceGateways()
+	loadData()
 
 	dataManager.BuildQuickDeviceDatas()
 
