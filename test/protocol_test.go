@@ -7,11 +7,12 @@ import (
 )
 
 func TestMakeData(t *testing.T) {
+	registerLength := uint16(2)
 	request := &protocol.ModbusRequest{
 		Address:         []byte{3},
 		FuncCode:        3,
 		RegisterAddress: 0x01F4,
-		RegisterLength:  2,
+		RegisterLength:  &registerLength,
 	}
 
 	expected := []byte{0x03, 0x03, 0x01, 0xF4, 0x00, 0x02, 0x85, 0xE7}
@@ -25,7 +26,7 @@ func TestMakeData(t *testing.T) {
 }
 
 func TestParseModbusResponse(t *testing.T) {
-	data := []byte{0x03, 0x03, 0x04, 0x02, 0x09, 0xFF, 0x9B, 0x79, 0xFD}
+	data := []byte{0x03, 0x03, 0x01, 0xF4, 0x00, 0x02, 0x85, 0xE7}
 
 	request := &protocol.ModbusRequest{
 		Address:  []byte{3},

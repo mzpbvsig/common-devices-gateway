@@ -33,8 +33,6 @@ func (h *CommonHandler) Handle(deviceGateway *bean.DeviceGateway, deviceData *De
 	}
 	cloudServer.ReportState(device.DeviceClass.Type, deviceGateway.Id, jsonData)
 
-	log.Printf("Handle Data continue next data common")
-
 	return true
 }
 

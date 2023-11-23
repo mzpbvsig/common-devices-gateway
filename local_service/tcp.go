@@ -120,7 +120,7 @@ func (s *TCPServer) SendMessage(senderAddr string, data []byte) error {
 				log.Error(errMsg)
 				errs = append(errs, errMsg)
 			} else {
-				log.Printf("Sent message to client %s: %+v", clientAddr, data)
+				log.Printf("Send message to client %s: %+v", clientAddr, data)
 			}
 		}
 	}

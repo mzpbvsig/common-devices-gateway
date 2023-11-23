@@ -20,8 +20,9 @@ type ModbusData struct {
 	RegisterAddress string `json:"register_address"`
 	FuncCode        string `json:"func_code"`
 	RegisterLength  string `json:"register_length"`
-	Data            string `json:"data"`
-	Params          string `json:"params"`
+	ByteCount       string `json:"byte_count"`
+	Data            string `json:"data"`   // 构造数据需要外部设置的值
+	Params          string `json:"params"` // 数据解析js的入口参数
 }
 
 func NewModbus(addressProvider func(int) []byte) *Modbus {
@@ -97,13 +98,12 @@ func (dModbus *Modbus) makeModbusData(device *bean.Device, entity *bean.Entity) 
 	request.Address = address
 
 	return dModbus.modbus.MakeData(request), nil
-
 }
 
 func (dModbus *Modbus) convertToRequest(data ModbusData) (*protocol.ModbusRequest, error) {
 	request := &protocol.ModbusRequest{}
 
-	// 转换 RegisterAddress
+	// Convert RegisterAddress
 	if data.RegisterAddress != "" {
 		registerAddress, err := strconv.ParseUint(data.RegisterAddress, 10, 16)
 		if err != nil {
@@ -111,34 +111,44 @@ func (dModbus *Modbus) convertToRequest(data ModbusData) (*protocol.ModbusReques
 		}
 		request.RegisterAddress = uint16(registerAddress)
 	} else {
-		return nil, fmt.Errorf("%s", "registerAddress is empty.")
+		return nil, fmt.Errorf("%s", "registerAddress is empty")
 	}
 
-	// 转换 FuncCode
+	// Convert FuncCode
 	if data.FuncCode != "" {
 		funcCode, err := strconv.ParseUint(data.FuncCode, 10, 8)
 		if err != nil {
-			return nil, fmt.Errorf("error converting FuncCode to byte: %+v", err)
+			return nil, fmt.Errorf("error converting FuncCode to byte %+v", err)
 		} else {
 			request.FuncCode = byte(funcCode)
 		}
 	} else {
-		return nil, fmt.Errorf("%s", "funcCode is empty.")
+		return nil, fmt.Errorf("%s", "funcCode is empty")
 	}
 
-	// 转换 RegisterLength
+	// Convert RegisterLength
 	if data.RegisterLength != "" {
-		registerLength, err := strconv.ParseUint(data.RegisterLength, 10, 16)
+		result, err := strconv.ParseUint(data.RegisterLength, 10, 16)
 		if err != nil {
-			return nil, fmt.Errorf("error converting RegisterLength to byte: %+v", err)
+			return nil, fmt.Errorf("error converting RegisterLength to byte %+v", err)
 		} else {
-			request.RegisterLength = uint16(registerLength)
+			registerLength := uint16(result)
+			request.RegisterLength = &registerLength
 		}
-	} else {
-		return nil, fmt.Errorf("%s", "registerLength is empty.")
 	}
 
-	// 转换 Value
+	// Convert ByteCount
+	if data.ByteCount != "" {
+		result, err := strconv.ParseUint(data.RegisterLength, 10, 8)
+		if err != nil {
+			return nil, fmt.Errorf("error converting RegisterLength to byte %+v", err)
+		} else {
+			byteCount := uint8(result)
+			request.ByteCount = &byteCount
+		}
+	}
+
+	// Convert Value
 	if data.Data != "" {
 		var value []uint16
 		err := json.Unmarshal([]byte(data.Data), &value)

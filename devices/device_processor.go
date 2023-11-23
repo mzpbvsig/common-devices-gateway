@@ -49,13 +49,16 @@ func NewDeviceProcessor() *DeviceProcessor {
 	dp.registerDataFromDeviceProcessors()
 	dp.registerMakeDeviceDataProcessors()
 
+	dp.LoadPlugins("./plugins")
+
 	return dp
 }
 
 func (dp *DeviceProcessor) LoadPlugins(directory string) {
 	entries, err := os.ReadDir(directory)
 	if err != nil {
-		log.Fatalf("Failed to read directory: %s", err)
+		log.Errorf("Failed to read directory: %s", err)
+		return
 	}
 
 	for _, entry := range entries {

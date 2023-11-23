@@ -49,7 +49,7 @@ func Start() {
 	}
 
 	testCallback := func(entity *bean.Entity) {
-		log.Printf("Test Callback :%+v", *entity)
+		log.Printf("Test Callback entity: %+v", entity)
 		err := mysqlManager.UpdateEntity(entity)
 		if err != nil {
 			log.Errorf("UpdateEntity err: %+v", err)
