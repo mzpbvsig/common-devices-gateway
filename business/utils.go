@@ -44,7 +44,7 @@ func dispatchEvent(entityId string, eventMethod string, value string, Type Devic
 	entity.EntityClass.Data = mergeIfLongEnough(entity.EntityClass.Data, value)
 	entity.EntityClass.Data = mergeIfLongEnough(entity.EntityClass.Data, entity.Data)
 
-	data, err := dp.ProcessMakeDeviceData(deviceData.Device, deviceData.Entity)
+	data, err := dp.ProcessRequest(deviceData.Device, deviceData.Entity)
 	if err != nil {
 		return err
 	}

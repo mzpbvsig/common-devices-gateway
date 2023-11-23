@@ -33,20 +33,20 @@ func (dp *DeviceProcessor) ReloadProtocols(protocols []*bean.Protocol) {
 	dp.LoadProtocols(protocols)
 }
 
-func (dp *DeviceProcessor) ProcessDataFromDevice(device *bean.Device, entity *bean.Entity, data []byte, isRunJs bool) (string, error) {
-	protocol, ok := dp.protocols[device.DeviceClass.Protocol]
-	if !ok {
-		return "", fmt.Errorf("device model %s is not supported ProcessDataFromDevice", device.DeviceClass.Protocol)
-	}
-
-	return dp.globalEngine.Response(protocol.ResponseCode, device, entity, data)
-}
-
-func (dp *DeviceProcessor) ProcessMakeDeviceData(device *bean.Device, entity *bean.Entity) ([]byte, error) {
+func (dp *DeviceProcessor) ProcessRequest(device *bean.Device, entity *bean.Entity) ([]byte, error) {
 	protocol, ok := dp.protocols[device.DeviceClass.Protocol]
 	if !ok {
 		return nil, fmt.Errorf("device model %s is not supported ProcessDataFromDevice", device.DeviceClass.Protocol)
 	}
 
 	return dp.globalEngine.Request(protocol.RequestCode, device, entity)
+}
+
+func (dp *DeviceProcessor) ProcessResponse(device *bean.Device, entity *bean.Entity, data []byte, isRunJs bool) (string, error) {
+	protocol, ok := dp.protocols[device.DeviceClass.Protocol]
+	if !ok {
+		return "", fmt.Errorf("device model %s is not supported ProcessDataFromDevice", device.DeviceClass.Protocol)
+	}
+
+	return dp.globalEngine.Response(protocol.ResponseCode, device, entity, data)
 }

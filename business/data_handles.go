@@ -18,7 +18,7 @@ func (h *CommonHandler) Handle(deviceGateway *bean.DeviceGateway, deviceData *De
 
 	device := deviceData.Device
 	entity := deviceData.Entity
-	result, err := dp.ProcessDataFromDevice(device, entity, data, true)
+	result, err := dp.ProcessResponse(device, entity, data, true)
 
 	if err != nil {
 		log.Errorf("Error processing data from device %+v", err)
@@ -42,7 +42,7 @@ type TestHandler struct {
 func (h *TestHandler) Handle(deviceGateway *bean.DeviceGateway, deviceData *DeviceData, data []byte) bool {
 	device := deviceData.Device
 	entity := deviceData.Entity
-	result, err := dp.ProcessDataFromDevice(device, entity, data, true)
+	result, err := dp.ProcessResponse(device, entity, data, true)
 	if err != nil {
 		log.Error("Error processing data from device ", err)
 		return false
@@ -62,7 +62,7 @@ func (h *SearchHandler) Handle(deviceGateway *bean.DeviceGateway, deviceData *De
 	device := deviceData.Device
 	entity := deviceData.Entity
 
-	_, err := dp.ProcessDataFromDevice(device, entity, data, false)
+	_, err := dp.ProcessResponse(device, entity, data, false)
 	if err != nil {
 		log.Error("Error processing search data from device: ", err)
 		return false

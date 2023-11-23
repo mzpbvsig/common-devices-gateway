@@ -109,7 +109,7 @@ func (restManager *RestManager) performSearch(rgatewayId string, classId string,
 					entity.EntityClass = &entityClass
 					entity.DeviceId = device.Id
 					entity.Id = "0"
-					data, err := dp.ProcessMakeDeviceData(device, entity)
+					data, err := dp.ProcessRequest(device, entity)
 
 					if err != nil {
 						log.Errorf("ProcessMakeDeviceData err is %s", err)
