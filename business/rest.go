@@ -216,7 +216,7 @@ func (restManager *RestManager) refresh(gatewayId string) {
 	cloudServer.CreateStateProducers()
 	cloudServer.RegisterByGatewayId(gatewayId)
 
-	log.Printf("Refresh data [loadDeviceGateways BuildQuickDeviceDatas Registers CreateStateProducers]")
+	log.Printf("Refresh data [loadData ReloadProtocols BuildQuickDeviceDatas Registers CreateStateProducers]")
 }
 
 func (restManager *RestManager) unsearch(gatewayId string) {

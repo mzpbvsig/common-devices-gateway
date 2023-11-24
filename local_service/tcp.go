@@ -8,14 +8,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// TCPServer is a TCP server object
 type TCPServer struct {
 	BaseServer
 	listener net.Listener
 	clients  map[string]net.Conn
 }
 
-// NewTCPServer creates a new TCPServer object
 func NewTCPServer(messageCallback func(clientAddr string, data []byte), connectedCallback func(clientAddr string), disconnectedCallback func(clientAddr string)) *TCPServer {
 	return &TCPServer{
 		clients: make(map[string]net.Conn),

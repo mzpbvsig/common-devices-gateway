@@ -417,7 +417,7 @@ func (manager *MysqlManager) GetEventsByEntityClassId(entityClassId string) ([]b
 	return events, nil
 }
 
-func (manager *MysqlManager) UpdateSearchDone(gatewayID string) error {
+func (manager *MysqlManager) UpdateSearchDone(gatewayId string) error {
 	if manager.db == nil {
 		return fmt.Errorf("database connection is not established")
 	}
@@ -426,7 +426,7 @@ func (manager *MysqlManager) UpdateSearchDone(gatewayID string) error {
 
 	stmt := "UPDATE s_search_log SET search_time = ?, process=0, is_done = 1 WHERE gateway_id = ?"
 
-	_, err := manager.db.Exec(stmt, now, gatewayID)
+	_, err := manager.db.Exec(stmt, now, gatewayId)
 
 	return err
 }
