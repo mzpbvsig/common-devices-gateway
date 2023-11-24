@@ -91,11 +91,11 @@ var result = protocol();
 ```javascript
 let params= undefined
  if(requestData.params){
-            params = JSON.parse(requestData.params)
+    params = JSON.parse(requestData.params)
 }
 function parseData(){
-     // 按照协议文档处理数据的代码
-     // 返回处理结果
+    // 按照协议文档处理数据的代码
+    // 返回处理结果
 }
  return parseData(params);
 ```
