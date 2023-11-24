@@ -15,9 +15,9 @@ import (
 
 type DeviceGatewaySearchCallback func(string, string, int)
 type DeviceGatewaySearch2Callback func(string, string, []string)
+type DeviceGatewayUnsearchCallback func(gatewayId string)
 type DeviceGatewayTestCallback func(eventId string, eventMethod string, data string)
 type DeviceGatewayRefreshCallback func(gatewayId string)
-type DeviceGatewayUnsearchCallback func(gatewayId string)
 
 type RestServer struct {
 	router           *mux.Router
@@ -148,15 +148,9 @@ func (s *RestServer) handleSearch() http.HandlerFunc {
 func (s *RestServer) handleSearch2() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var deviceGateways []*bean.DeviceGateway
-		var err error
 
 		gatewayId := r.URL.Query().Get("gateway_id")
 		classId := r.URL.Query().Get("class_id")
-
-		if err != nil {
-			http.Error(w, fmt.Sprintf("%v", err), http.StatusInternalServerError)
-			return
-		}
 
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, "Error parsing form", http.StatusBadRequest)
