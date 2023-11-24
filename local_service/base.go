@@ -6,13 +6,13 @@ import (
 
 type ILocalServer interface {
 	Stop()
-	SendMessage(clientAddr string, data []byte) error
+	SendMessage(ip string, data []byte) error
 }
 
 type BaseServer struct {
 	clientsLock          sync.Mutex
 	shutdownChan         chan struct{}
-	MessageCallback      func(clientAddr string, data []byte)
-	ConnectedCallback    func(clientAddr string)
-	DisconnectedCallback func(clientAddr string)
+	MessageCallback      func(ip string, data []byte)
+	ConnectedCallback    func(ip string)
+	DisconnectedCallback func(ip string)
 }

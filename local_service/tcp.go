@@ -50,7 +50,6 @@ func (s *TCPServer) Start(port int) {
 	}
 }
 
-// Stop stops the TCP server
 func (s *TCPServer) Stop() {
 	close(s.shutdownChan)
 	s.listener.Close()
