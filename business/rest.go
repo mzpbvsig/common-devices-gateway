@@ -34,9 +34,9 @@ func (restManager *RestManager) Start() {
 	restServer := internal.NewRestServer(mysqlManager)
 	restServer.SearchCallback = restManager.search
 	restServer.Search2Callback = restManager.search2
+	restServer.UnsearchCallback = restManager.unsearch
 	restServer.TestCallback = restManager.test
 	restServer.RefreshCallback = restManager.refresh
-	restServer.UnsearchCallback = restManager.unsearch
 	go restServer.Start(config.RestPort)
 }
 
@@ -54,10 +54,12 @@ func (restManager *RestManager) performSearch(rgatewayId string, classId string,
 			continue
 		}
 
+		deviceGateway.IsOnline = localServer.IsOnline(deviceGateway.Ip)
 		if !deviceGateway.IsOnline {
 			log.Warnf("Search deviceGateway %s is offline", deviceGateway.Ip)
 			continue
 		}
+
 		if restManager.deviceMap[deviceGateway.Id] == nil {
 			restManager.deviceMap[deviceGateway.Id] = make(map[string]bool)
 		} else {

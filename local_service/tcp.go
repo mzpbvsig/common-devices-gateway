@@ -1,11 +1,10 @@
 package local_service
 
 import (
-	"errors"
 	"fmt"
 	"net"
-	"strings"
 
+	"github.com/mzpbvsig/common-devices-gateway/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -29,9 +28,7 @@ func NewTCPServer(messageCallback func(clientAddr string, data []byte), connecte
 	}
 }
 
-// Start starts the TCP server
 func (s *TCPServer) Start(port int) {
-	// Start the TCP server
 	var err error
 	s.listener, err = net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 	if err != nil {
@@ -43,14 +40,12 @@ func (s *TCPServer) Start(port int) {
 	log.Println("Server has started, waiting for client connections...")
 
 	for {
-		// Wait for client connections
 		conn, err := s.listener.Accept()
 		if err != nil {
 			log.Println("Client connection error:", err)
 			continue
 		}
 
-		// Handle client connection
 		go s.handleClient(conn)
 	}
 }
@@ -61,30 +56,34 @@ func (s *TCPServer) Stop() {
 	s.listener.Close()
 }
 
-func (s *TCPServer) handleClient(conn net.Conn) {
-	// Get the client address
-	clientAddr := conn.RemoteAddr().String()
+func (s *TCPServer) IsOnline(ip string) bool {
+	return s.clients[ip] != nil
+}
 
-	// Save the client connection to the clients map
+func (s *TCPServer) handleClient(conn net.Conn) {
+	clientAddr := conn.RemoteAddr().String()
+	log.Printf("Client %s has connected", clientAddr)
+
+	ip := utils.ExtractIP(clientAddr)
+
 	s.clientsLock.Lock()
-	s.clients[clientAddr] = conn
+	s.clients[ip] = conn
 	s.clientsLock.Unlock()
 
-	log.Printf("Client %s has connected", clientAddr)
 	if s.ConnectedCallback != nil {
-		s.ConnectedCallback(clientAddr)
+		s.ConnectedCallback(ip)
 	}
-	// Handle client messages
+
 	for {
 		select {
 		case <-s.shutdownChan:
 			log.Printf("Server is shutting down, client %s has disconnected", clientAddr)
 			s.clientsLock.Lock()
-			delete(s.clients, clientAddr) // Remove the connection from the clients map
+			delete(s.clients, ip)
 			s.clientsLock.Unlock()
 
 			if s.DisconnectedCallback != nil {
-				s.DisconnectedCallback(clientAddr)
+				s.DisconnectedCallback(ip)
 			}
 			return
 		default:
@@ -93,41 +92,34 @@ func (s *TCPServer) handleClient(conn net.Conn) {
 			if err != nil {
 				log.Errorf("Client %s has disconnected", clientAddr)
 				s.clientsLock.Lock()
-				delete(s.clients, clientAddr) // Remove the connection from the clients map
+				delete(s.clients, ip)
 				s.clientsLock.Unlock()
 				return
 			}
 
-			log.Printf("Message from client %s: %+v", clientAddr, buffer[:n])
+			log.Printf("Message from client %s: %+v", ip, buffer[:n])
 
 			if s.MessageCallback != nil {
-				s.MessageCallback(clientAddr, buffer[:n])
+				s.MessageCallback(ip, buffer[:n])
 			}
 		}
 	}
 }
 
-func (s *TCPServer) SendMessage(senderAddr string, data []byte) error {
+func (s *TCPServer) SendMessage(ip string, data []byte) error {
 	s.clientsLock.Lock()
 	defer s.clientsLock.Unlock()
 
-	var errs []string
-	for clientAddr, conn := range s.clients {
-		if strings.Contains(clientAddr, senderAddr) {
-			_, err := conn.Write(data)
-			if err != nil {
-				errMsg := fmt.Sprintf("Failed to send message to client %s: %+v", clientAddr, err)
-				log.Error(errMsg)
-				errs = append(errs, errMsg)
-			} else {
-				log.Printf("Send message to client %s: %+v", clientAddr, data)
-			}
-		}
+	conn, found := s.clients[ip]
+	if !found {
+		return fmt.Errorf("client %s not found", ip)
 	}
 
-	if len(errs) > 0 {
-		return errors.New(strings.Join(errs, "; "))
+	_, err := conn.Write(data)
+	if err != nil {
+		return err
 	}
 
+	log.Printf("Send message to client %s: %+v", ip, data)
 	return nil
 }

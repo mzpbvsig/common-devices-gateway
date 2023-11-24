@@ -7,7 +7,7 @@ import (
 func handleData(clientAddr string, data []byte) {
 	deviceGateway := getDeviceGatewayByClientAddr(clientAddr)
 	if deviceGateway == nil {
-		log.Error("Handle Data devcie gateway not found: %s" + clientAddr)
+		log.Error("Devcie gateway not found: %s" + clientAddr)
 		return
 	}
 

@@ -15,7 +15,6 @@ type DataHandler interface {
 type CommonHandler struct{}
 
 func (h *CommonHandler) Handle(deviceGateway *bean.DeviceGateway, deviceData *DeviceData, data []byte) bool {
-
 	device := deviceData.Device
 	entity := deviceData.Entity
 	result, err := dp.ProcessResponse(device, entity, data, true)

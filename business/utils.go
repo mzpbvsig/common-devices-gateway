@@ -24,6 +24,7 @@ func dispatchEvent(entityId string, eventMethod string, value string, Type Devic
 	}
 
 	deviceGateway := deviceData.DeviceGateway
+	deviceGateway.IsOnline = localServer.IsOnline(deviceGateway.Ip)
 	if !deviceGateway.IsOnline {
 		return fmt.Errorf("device gateway id:%s, ip: %s is offline", deviceGateway.Id, deviceGateway.Ip)
 	}

@@ -3,6 +3,7 @@ package business
 import (
 	"strings"
 
+	"github.com/AthenZ/athenz/libs/go/athenz-common/log"
 	"github.com/mzpbvsig/common-devices-gateway/bean"
 	"github.com/mzpbvsig/common-devices-gateway/local_service"
 )
@@ -30,10 +31,19 @@ func NewLocalServer(config bean.Config, handleData func(clientAddr string, data 
 }
 
 func (localServer LocalServer) SendMessage(deviceData *DeviceData) {
+	var iLocalServer local_service.ILocalServer
 	switch strings.ToLower(deviceData.DeviceGateway.Protocol) {
 	case "tcp":
-		localServer.TcpServer.SendMessage(deviceData.DeviceGateway.Ip, deviceData.Data)
+		iLocalServer = localServer.TcpServer
 	case "websocket":
-		localServer.WebSocketServer.SendMessage(deviceData.DeviceGateway.Ip, deviceData.Data)
+		iLocalServer = localServer.WebSocketServer
 	}
+	err := iLocalServer.SendMessage(deviceData.DeviceGateway.Ip, deviceData.Data)
+	if err != nil {
+		log.Errorf("SendMessage message %+v", err)
+	}
+}
+
+func (localServer LocalServer) IsOnline(ip string) bool {
+	return localServer.TcpServer.IsOnline(ip)
 }

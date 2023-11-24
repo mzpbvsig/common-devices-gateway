@@ -65,58 +65,6 @@ func sendJSONResponse[T any](w http.ResponseWriter, response bean.ResponseData[T
 	}
 }
 
-func (s *RestServer) handleTest() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, "Error parsing form", http.StatusBadRequest)
-			return
-		}
-
-		entityId := r.URL.Query().Get("entity_id")
-		eventMethod := r.URL.Query().Get("event_method")
-
-		data := ""
-		if err := r.ParseForm(); err == nil {
-			data = r.FormValue("data")
-		}
-
-		if entityId != "" {
-			if s.TestCallback != nil {
-				s.TestCallback(entityId, eventMethod, data)
-			}
-		} else {
-			http.Error(w, fmt.Sprintf("%v", "entityId is empty"), http.StatusInternalServerError)
-			return
-		}
-
-		response := bean.ResponseData[string]{
-			Message: "Test request completed",
-			Code:    http.StatusOK,
-			Data:    "",
-		}
-
-		sendJSONResponse(w, response)
-	}
-}
-
-func (s *RestServer) handleRefresh() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-
-		gatewayId := r.URL.Query().Get("gateway_id")
-
-		response := bean.ResponseData[string]{
-			Message: "Refresh request completed",
-			Code:    http.StatusOK,
-			Data:    "",
-		}
-		sendJSONResponse(w, response)
-
-		if s.RefreshCallback != nil {
-			s.RefreshCallback(gatewayId)
-		}
-	}
-}
-
 func (s *RestServer) handleSearch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var deviceGateways []*bean.DeviceGateway
@@ -187,6 +135,58 @@ func (s *RestServer) handleUnsearch() http.HandlerFunc {
 		}
 
 		sendJSONResponse(w, response)
+	}
+}
+
+func (s *RestServer) handleTest() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Error parsing form", http.StatusBadRequest)
+			return
+		}
+
+		entityId := r.URL.Query().Get("entity_id")
+		eventMethod := r.URL.Query().Get("event_method")
+
+		data := ""
+		if err := r.ParseForm(); err == nil {
+			data = r.FormValue("data")
+		}
+
+		if entityId != "" {
+			if s.TestCallback != nil {
+				s.TestCallback(entityId, eventMethod, data)
+			}
+		} else {
+			http.Error(w, fmt.Sprintf("%v", "entityId is empty"), http.StatusInternalServerError)
+			return
+		}
+
+		response := bean.ResponseData[string]{
+			Message: "Test request completed",
+			Code:    http.StatusOK,
+			Data:    "",
+		}
+
+		sendJSONResponse(w, response)
+	}
+}
+
+func (s *RestServer) handleRefresh() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		gatewayId := r.URL.Query().Get("gateway_id")
+
+		response := bean.ResponseData[string]{
+			Message: "Refresh request completed",
+			Code:    http.StatusOK,
+			Data:    "",
+		}
+		sendJSONResponse(w, response)
+
+		if s.RefreshCallback != nil {
+			s.RefreshCallback(gatewayId)
+		}
 	}
 }
 

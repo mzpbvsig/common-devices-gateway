@@ -4,8 +4,7 @@ import (
 	"sync"
 )
 
-type LocalServer interface {
-	Start(port int)
+type ILocalServer interface {
 	Stop()
 	SendMessage(clientAddr string, data []byte) error
 }

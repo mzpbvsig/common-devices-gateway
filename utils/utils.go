@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"log"
+	"net"
 )
 
 func CalculateCRC(data []byte) uint16 {
@@ -72,10 +74,11 @@ func MergeJSONStrings(jsonStr1, jsonStr2 string) (string, error) {
 	return string(mergedJSON), nil
 }
 
-func StructToJSON(v interface{}) (string, error) {
-	jsonBytes, err := json.Marshal(v)
+func ExtractIP(clientAddr string) string {
+	host, _, err := net.SplitHostPort(clientAddr)
 	if err != nil {
-		return "", err
+		log.Printf("Failed to split host and port: %v", err)
+		return ""
 	}
-	return string(jsonBytes), nil
+	return host
 }
