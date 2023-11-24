@@ -22,10 +22,16 @@ func (engine *JSEngine) Request(jsCode string, device *bean.Device, entity *bean
 	engine.vm.Set("entity", entity)
 
 	code := fmt.Sprintf(`
-        function request(){
+        function protocol(){
+            let requestData = {};
+            try {
+                requestData = JSON.parse(entity.EntityClass.Data);
+            } catch(e){
+                 console.log(e);
+            }
             %s
         }
-        var result = request();
+        var result = protocol();
     `, jsCode)
 
 	_, err := engine.vm.RunString(code)
@@ -56,14 +62,25 @@ func (engine *JSEngine) Response(jsCode string, device *bean.Device, entity *bea
 	engine.vm.Set("data", responseData)
 
 	code := fmt.Sprintf(`
-        function response(){
-            %s  
-            function getinfo(){
+        function protocol(){
+            let requestData = {};
+            try {
+                requestData = JSON.parse(entity.EntityClass.Data);
+            } catch(e){
+                 console.log(e);
+            }
+            %s
+            let params= undefined
+            if(requestData.params){
+                params = JSON.parse(requestData.params)
+            }
+            function parseData(){
                 %s
-            } 
-            return getinfo(params);
+            }
+            return parseData(params);
         }
-        var result = response();
+        
+        var result = protocol();
     `, jsCode, entity.EntityClass.Code)
 
 	_, err := engine.vm.RunString(code)

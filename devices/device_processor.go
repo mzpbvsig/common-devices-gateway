@@ -36,7 +36,7 @@ func (dp *DeviceProcessor) ReloadProtocols(protocols []*bean.Protocol) {
 func (dp *DeviceProcessor) ProcessRequest(device *bean.Device, entity *bean.Entity) ([]byte, error) {
 	protocol, ok := dp.protocols[device.DeviceClass.Protocol]
 	if !ok {
-		return nil, fmt.Errorf("device model %s is not supported ProcessDataFromDevice", device.DeviceClass.Protocol)
+		return nil, fmt.Errorf("device model %s is not supported request code", device.DeviceClass.Protocol)
 	}
 	if dp.globalEngines[device.GatewayId] == nil {
 		dp.globalEngines[device.GatewayId] = code_engin.NewJSEngine()
@@ -47,7 +47,7 @@ func (dp *DeviceProcessor) ProcessRequest(device *bean.Device, entity *bean.Enti
 func (dp *DeviceProcessor) ProcessResponse(device *bean.Device, entity *bean.Entity, data []byte, isRunJs bool) (string, error) {
 	protocol, ok := dp.protocols[device.DeviceClass.Protocol]
 	if !ok {
-		return "", fmt.Errorf("device model %s is not supported ProcessDataFromDevice", device.DeviceClass.Protocol)
+		return "", fmt.Errorf("device model %s is not supported response code", device.DeviceClass.Protocol)
 	}
 	if dp.globalEngines[device.GatewayId] == nil {
 		dp.globalEngines[device.GatewayId] = code_engin.NewJSEngine()

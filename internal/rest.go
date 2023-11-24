@@ -136,7 +136,7 @@ func (s *RestServer) handleSearch() http.HandlerFunc {
 		}
 
 		response := bean.ResponseData[[]*bean.DeviceGateway]{
-			Message: "Search completed",
+			Message: "Searching",
 			Code:    http.StatusOK,
 			Data:    deviceGateways,
 		}
@@ -163,7 +163,7 @@ func (s *RestServer) handleSearch2() http.HandlerFunc {
 		}
 
 		response := bean.ResponseData[[]*bean.DeviceGateway]{
-			Message: "Search completed",
+			Message: "Searching",
 			Code:    http.StatusOK,
 			Data:    deviceGateways,
 		}
