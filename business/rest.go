@@ -44,15 +44,17 @@ func (restManager *RestManager) Increasing(gatewayId string) {
 	restManager.searchNums[gatewayId]++
 }
 
-func (restManager *RestManager) performSearch(rgatewayId string, classId string, snProvider func(int) string, snCount int) {
+func (restManager *RestManager) performSearch(rgatewayId string, classId string, snProvider func(int) string, snCount int) []*bean.DeviceGateway {
+	deviceGateways := []*bean.DeviceGateway{}
+
 	for _, deviceGateway := range config.DeviceGateways {
 		gatewayId := deviceGateway.Id
 
 		if rgatewayId == "" || rgatewayId == "0" {
-
 		} else if rgatewayId != gatewayId {
 			continue
 		}
+		deviceGateways = append(deviceGateways, deviceGateway)
 
 		deviceGateway.IsOnline = localServer.IsOnline(deviceGateway.Ip)
 		if !deviceGateway.IsOnline {
@@ -134,22 +136,23 @@ func (restManager *RestManager) performSearch(rgatewayId string, classId string,
 		if restManager.searchTotals[gatewayId] == 0 {
 			restManager.reset(gatewayId)
 		}
-
 	}
+
+	return deviceGateways
 }
 
-func (restManager *RestManager) search(gatewayId string, classId string, maxSn int) {
+func (restManager *RestManager) search(gatewayId string, classId string, maxSn int) []*bean.DeviceGateway {
 	snProvider := func(i int) string {
 		return fmt.Sprintf("%d", i)
 	}
-	restManager.performSearch(gatewayId, classId, snProvider, maxSn)
+	return restManager.performSearch(gatewayId, classId, snProvider, maxSn)
 }
 
-func (restManager *RestManager) search2(gatewayId string, classId string, sns []string) {
+func (restManager *RestManager) search2(gatewayId string, classId string, sns []string) []*bean.DeviceGateway {
 	snProvider := func(i int) string {
 		return sns[i-1]
 	}
-	restManager.performSearch(gatewayId, classId, snProvider, len(sns))
+	return restManager.performSearch(gatewayId, classId, snProvider, len(sns))
 }
 
 func (restManager *RestManager) reset(gatewayId string) {

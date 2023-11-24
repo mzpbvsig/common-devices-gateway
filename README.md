@@ -4,7 +4,7 @@
 
 这份文档描述了一个通用网关程序的设计和结构。该程序的主要目标是允许与多种设备通信，收集数据，并将数据发送到云端服务。程序的核心部分由 Golang 编写，采用了模块化的设计，以便易于扩展和维护。
 
-## 结构
+## 目录结构
 
 通用网关程序的源代码按以下目录结构组织：
 
@@ -84,20 +84,20 @@ var result = protocol();
 
 数据解析代码的主要任务是根据设备响应的数据进行数据处理，按照协议文档执行数据解析。该过程涉及以下几个步骤：
 
-1. **输入参数**： 该代码部分接收data，即设备响应的数据,params解析用到的参数
+1. **输入参数**： 该代码部分接收`data`，即设备响应的数据,`params`解析用到的参数
 2. **数据处理**：基于输入参数，JS代码需要按照协议文档处理数据。
 3. **返回值**：JS代码应返回一个字符串，代表处理后的数据结果。
 
 ```javascript
 let params= undefined
-            if(requestData.params){
-                params = JSON.parse(requestData.params)
-            }
-            function parseData(){
-                // 按照协议文档处理数据的代码
-                // 返回处理结果
-            }
-            return parseData(params);
+ if(requestData.params){
+            params = JSON.parse(requestData.params)
+}
+function parseData(){
+     // 按照协议文档处理数据的代码
+     // 返回处理结果
+}
+ return parseData(params);
 ```
 
 遵循这些编写规范，开发者可以有效地创建用于通用网关程序的JS代码，从而确保数据的正确传输和处理。这将极大地提升物联网网关的可靠性和灵活性。

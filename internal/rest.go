@@ -13,8 +13,8 @@ import (
 	"github.com/mzpbvsig/common-devices-gateway/bean"
 )
 
-type DeviceGatewaySearchCallback func(string, string, int)
-type DeviceGatewaySearch2Callback func(string, string, []string)
+type DeviceGatewaySearchCallback func(string, string, int) []*bean.DeviceGateway
+type DeviceGatewaySearch2Callback func(string, string, []string) []*bean.DeviceGateway
 type DeviceGatewayUnsearchCallback func(gatewayId string)
 type DeviceGatewayTestCallback func(eventId string, eventMethod string, data string)
 type DeviceGatewayRefreshCallback func(gatewayId string)
@@ -67,7 +67,6 @@ func sendJSONResponse[T any](w http.ResponseWriter, response bean.ResponseData[T
 
 func (s *RestServer) handleSearch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var deviceGateways []*bean.DeviceGateway
 
 		gatewayId := r.URL.Query().Get("gateway_id")
 		classId := r.URL.Query().Get("class_id")
@@ -79,8 +78,9 @@ func (s *RestServer) handleSearch() http.HandlerFunc {
 			return
 		}
 
+		var deviceGateways []*bean.DeviceGateway
 		if s.SearchCallback != nil {
-			s.SearchCallback(gatewayId, classId, num)
+			deviceGateways = s.SearchCallback(gatewayId, classId, num)
 		}
 
 		response := bean.ResponseData[[]*bean.DeviceGateway]{
@@ -95,8 +95,6 @@ func (s *RestServer) handleSearch() http.HandlerFunc {
 
 func (s *RestServer) handleSearch2() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var deviceGateways []*bean.DeviceGateway
-
 		gatewayId := r.URL.Query().Get("gateway_id")
 		classId := r.URL.Query().Get("class_id")
 
@@ -106,8 +104,9 @@ func (s *RestServer) handleSearch2() http.HandlerFunc {
 		}
 		sns := r.FormValue("sns")
 
+		var deviceGateways []*bean.DeviceGateway
 		if s.Search2Callback != nil {
-			s.Search2Callback(gatewayId, classId, strings.Split(sns, ","))
+			deviceGateways = s.Search2Callback(gatewayId, classId, strings.Split(sns, ","))
 		}
 
 		response := bean.ResponseData[[]*bean.DeviceGateway]{
